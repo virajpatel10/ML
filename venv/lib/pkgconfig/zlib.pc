@@ -1,0 +1,13 @@
+prefix=/Users/virajpatel/Desktop/ML/venv
+exec_prefix=/Users/virajpatel/Desktop/ML/venv
+libdir=/Users/virajpatel/Desktop/ML/venv/lib
+sharedlibdir=/Users/virajpatel/Desktop/ML/venv/lib
+includedir=/Users/virajpatel/Desktop/ML/venv/include
+
+Name: zlib
+Description: zlib compression library
+Version: 1.2.13
+
+Requires:
+Libs: -L${libdir} -L${sharedlibdir} -lz
+Cflags: -I${includedir}
