@@ -17,7 +17,7 @@ from src.logger import logging
 from dataclasses import dataclass
 import os
 import sys
-from src.utils import save_object
+from src.utils import save_object,func_models,evaluate_model
 
 
 
@@ -30,33 +30,6 @@ class ModelTrainerConfig:
 class ModelTrainer:
     def __init__(self):
         self.model_trainer_config=ModelTrainerConfig()
-
-    def evaluate_model(self, true, predicted):
-        mae = mean_absolute_error(true, predicted)
-        mse = mean_squared_error(true, predicted)
-        rmse = np.sqrt(mean_squared_error(true, predicted))
-        r2_square = r2_score(true, predicted)
-        return mae, rmse, r2_square
-
-    def func_models(self, X_train,y_train,X_test,y_test,models):
-        report={}
-        for i in range(len(list(models))):
-            model = list(models.values())[i]
-            model.fit(X_train, y_train) # Train model
-
-            # Make predictions
-            y_train_pred = model.predict(X_train)
-            y_test_pred = model.predict(X_test)
-            
-            # Evaluate Train and Test dataset
-            model_train_mae , model_train_rmse, model_train_r2 = self.evaluate_model(y_train, y_train_pred)
-
-            model_test_mae , model_test_rmse, model_test_r2 = self.evaluate_model(y_test, y_test_pred)
-
-    
-            #print(list(models.keys())[i])
-            report[list(models.keys())[i]]=model_test_r2
-        return report
 
     def initiate_model_trainer(self,train_array,test_array):
         try:
@@ -81,7 +54,44 @@ class ModelTrainer:
                 "AdaBoost Regressor": AdaBoostRegressor()
             }               
 
-            model_report:dict= self.func_models(X_train,y_train,X_test,y_test,models)
+            params={
+                "Decision Tree": {
+                    'criterion':['squared_error', 'friedman_mse', 'absolute_error', 'poisson'],
+                    # 'splitter':['best','random'],
+                    # 'max_features':['sqrt','log2'],
+                },
+                "Random Forest":{
+                    # 'criterion':['squared_error', 'friedman_mse', 'absolute_error', 'poisson'],
+                 
+                    # 'max_features':['sqrt','log2',None],
+                    'n_estimators': [8,16,32,64,128,256]
+                },
+                "Gradient Boosting":{
+                    # 'loss':['squared_error', 'huber', 'absolute_error', 'quantile'],
+                    'learning_rate':[.1,.01,.05,.001],
+                    'subsample':[0.6,0.7,0.75,0.8,0.85,0.9],
+                    # 'criterion':['squared_error', 'friedman_mse'],
+                    # 'max_features':['auto','sqrt','log2'],
+                    'n_estimators': [8,16,32,64,128,256]
+                },
+                "Linear Regression":{},
+                "Lasso": {},
+                "Ridge": {},
+                "K-Neighbors Regressor":{},
+                "Random Forest Regressor":{},
+                "XGBRegressor":{
+                    'learning_rate':[.1,.01,.05,.001],
+                    'n_estimators': [8,16,32,64,128,256]
+                },
+                "AdaBoost Regressor":{
+                    'learning_rate':[.1,.01,0.5,.001],
+                    # 'loss':['linear','square','exponential'],
+                    'n_estimators': [8,16,32,64,128,256]
+                }
+                
+            }
+
+            model_report:dict= func_models(X_train,y_train,X_test,y_test,models,params)
 
             best_model_score=max(sorted(model_report.values()))
 
